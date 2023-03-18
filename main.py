@@ -1,48 +1,53 @@
 import argparse
-from PIL import Image
-from src.functions import *
+from pathlib import Path
+from src.embed import *
+from src.extract import *
+from src.experiments import *
 
-parser = argparse.ArgumentParser(description='Watermark embedding and extracting programm\n'
-                                             'WARNING: Image may be cropped from 1 to 3 pixels from each side')
-parser.add_argument('-i', '--image', help='Image file to work with')
+parser = argparse.ArgumentParser(description='Watermark embedding and extracting programm\n')
+parser.add_argument('-i', '--image', help='Image file to embed in')
 parser.add_argument('-w', '--watermark', type=argparse.FileType('r'))
 parser.add_argument('-k', '--key', type=argparse.FileType('r'), help='Key file')
 parser.add_argument('-C', action='store_true', help='Embed watermark (Cover the image)')
 parser.add_argument('-U', action='store_true', help='Extract watermark (Uncover the image)')
 
 
+def image_as_layers(path: str) -> np.ndarray:
+    img = Image.open(path)
+    layers = Image.Image.split(img)
+    img.close()
+    return np.array([np.array(layers[i]) for i in range(3)])
+
+
+def exctract_cover(path1, path2, path3, path4):
+    images = [image_as_layers(path1), image_as_layers(path2), image_as_layers(path3), image_as_layers(path4)]
+    imgg = ExtractCoverImage(*images)
+    Image.fromarray(imgg).save('new_image.png')
+    print('Saved extracted image in file: new_image.png')
+
+
+def embed(path, wm, mu):
+    img_arr = image_as_layers(path)
+    img1, img2, img3, img4 = Embed(img_arr, '1' * 14, '11010101001010010100101010100101010100101')
+    Image.fromarray(img1).save('img1.png')
+    Image.fromarray(img2).save('img2.png')
+    Image.fromarray(img3).save('img3.png')
+    Image.fromarray(img4).save('img4.png')
+
+
+def extract_watermark(path: str, mu: str):
+    img_arr = image_as_layers(path)
+    wm = ExtractWatermark(img_arr, mu)
+    print(wm)
+
+
 def main():
-    args = parser.parse_args()
-
-    # img = Image.open(args.image)
-    # new_shape = GetNewImageSize(img.size)
-    # img = img.crop((0, 0, new_shape[0], new_shape[1]))
-    #
-    # layers = np.array(img)
-    # img.close()
-    #
-    # for color, layer in enumerate(layers):
-    #     ci_blocks = SplitArrayBySquareBlocks(layer, 4)
-    #     for ci_block in ci_blocks:
-    #         subsample_blocks = Create_Subsample_Blocks(ci_block)
-    #         interpolated_blocks = [Interpolate_Subsample_Block(ssb) for ssb in subsample_blocks]
-
-    ci_block = np.array([[15, 18, 19, 14], [13, 15, 16, 17], [18, 17, 14, 13], [23, 24, 25, 22]])
-    subsample_blocks = Create_Subsample_Blocks(ci_block)
-    interpolated_blocks = np.array([Interpolate_Subsample_Block(ssb) for ssb in subsample_blocks])
-    example_interpolated_blocks = np.array([[[15, 16, 17, 19], [16, 16, 18, 17], [17, 17, 15, 16], [18, 16, 16, 14]],
-                                            [[18, 16, 15, 14], [17, 17, 14, 14], [16, 16, 14, 14], [17, 15, 15, 13]],
-                                            [[13, 16, 16, 16], [17, 15, 18, 23], [18, 20, 23, 24], [23, 20, 21, 25]],
-                                            [[15, 17, 17, 17], [19, 17, 18, 19], [20, 22, 21, 20], [24, 22, 21, 23]]])
-    # print(interpolated_blocks)
-    # print(*subsample_blocks, sep='\n\n')
-    # print(*interpolated_blocks, sep='\n\n')
-    # print(Lagrange_Interpolation('01000111010', '1' * 14))
-    wm_blocks = Create_Watermark_Images_From_Interpolated_Images(interpolated_blocks,
-                                                                 Lagrange_Interpolation('01000111010', '1' * 14), '01')
-    extr = Extract(wm_blocks, '1' * 14)
-    print(extr)
-    print(Lagrange_Interpolation('01000111010', '1' * 14))
+    embed('lena.png', 1, 1)
+    # extract_watermark('img1.png', '1' * 14)
+    # args = parser.parse_args()
+    # ci_block = np.array([[15, 18, 19, 14], [13, 15, 16, 17], [18, 17, 14, 13], [23, 24, 25, 22]])
+    # ssb = Create_Subsample_Blocks(ci_block)
+    # ib = Interpolate_Subsample_Block(ssb)
 
 
 if __name__ == '__main__':
