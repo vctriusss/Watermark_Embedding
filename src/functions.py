@@ -1,4 +1,5 @@
 import numpy as np
+from PIL import Image
 
 
 def TDC(block: np.ndarray) -> str:
@@ -60,3 +61,11 @@ def FormLayer_From4x4Blocks(arr: np.ndarray, new_shape: tuple) -> np.ndarray:
     h, w = new_shape
     blocks = np.reshape(arr, (h // 4, w // 4, 4, 4)).swapaxes(1, 2)
     return np.reshape(blocks, new_shape)
+
+
+def image_as_layers(path: str) -> np.ndarray:
+    img = Image.open(path)
+    layers = Image.Image.split(img)
+    img.close()
+    return np.array([np.array(layers[i]) for i in range(3)])
+

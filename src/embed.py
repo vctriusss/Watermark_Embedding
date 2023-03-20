@@ -106,8 +106,6 @@ def EmbedInColorComponent(layer: np.ndarray, M: str, mu: str):
 
 
 def Embed(img: np.ndarray, mu: str, M: str):
-    M = M + '0' * ((11 - len(M) % 11) % 11)
-
     r_layers = EmbedInColorComponent(img[0], M, mu)
     g_layers = EmbedInColorComponent(img[1], M, mu)
     b_layers = EmbedInColorComponent(img[2], M, mu)
