@@ -21,10 +21,6 @@ def main():
         program.extract_watermark()
     elif args.R:
         program.exctract_cover()
-    # ci_block = np.array([[15, 18, 19, 14], [13, 15, 16, 17], [18, 17, 14, 13], [23, 24, 25, 22]])
-    # ssb = Create_Subsample_Blocks(ci_block)
-    # ib = [Interpolate_Subsample_Block(ssbi) for ssbi in ssb]
-    # print(*ib)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,5 @@
 from src.extract import *
 from src.embed import *
-import os
 
 
 class Programm:
@@ -17,8 +16,6 @@ class Programm:
         if args['image_file'] is not None:
             self.image_file = args['image_file']
         if args['images_list'] is not None:
-            # self.paths = [os.path.join(dirpath, f) for (dirpath, dirnames, filenames) in os.walk(args['images_dir']) for
-            #               f in filenames]
             self.paths = args['images_list']
         if args['l'] is not None:
             self.l = args['l']
@@ -35,7 +32,7 @@ class Programm:
     def extract_watermark(self):
         img_arr = image_as_layers(self.image_file)
         wm = ExtractWatermark(img_arr, self.mu)[:self.l * 4]
-        wm = hex(int(wm, 2))
+        wm = hex(int(wm, 2))[2:]
         print('Extracted watermark:', wm)
 
     def exctract_cover(self):

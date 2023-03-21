@@ -23,8 +23,8 @@ def ExtractDataBitsFromImageBlock(block: np.ndarray, a: int, b: int, mu_int11: i
 
     new_gamma = f - a * Yp * Yp - b * Yp
 
-    # Return Watermark & TDC
-    return IntToBin(new_gamma ^ mu_int11, 11), IntToBin(block[1][0] % 4, 2)
+    # Return Watermark
+    return IntToBin(new_gamma ^ mu_int11, 11)
 
 
 def ExtractCoverImageFrom4Blocks(b1: np.ndarray, b2: np.ndarray, b3: np.ndarray, b4: np.ndarray):
@@ -45,10 +45,16 @@ def ExctractCoverImageLayer(img1, img2, img3, img4):
     img2 = SplitLayer_By4x4Blocks(img2)
     img3 = SplitLayer_By4x4Blocks(img3)
     img4 = SplitLayer_By4x4Blocks(img4)
+    ci = []
+    for i in range(shape[0] * shape[1] // 16):
+        ci_block = ExtractCoverImageFrom4Blocks(img1[i], img2[i], img3[i], img4[i])
+        ci.append(ci_block)
+        rtdc = TDC(ci_block)
+        etdcs = [ExtractTDC(img1[i]), ExtractTDC(img2[i]), ExtractTDC(img3[i]), ExtractTDC(img4[i])]
+        if not (rtdc == etdcs[0] == etdcs[1] == etdcs[2] == etdcs[3]):
+            print(f'WARNING!!! Tamper Detected in block {i}')
 
-    ci = np.array(
-        [ExtractCoverImageFrom4Blocks(img1[i], img2[i], img3[i], img4[i]) for i in range(shape[0] * shape[1] // 16)])
-    return FormLayer_From4x4Blocks(ci, shape)
+    return FormLayer_From4x4Blocks(np.array(ci), shape)
 
 
 def ExtractCoverImage(img1, img2, img3, img4):
@@ -65,8 +71,11 @@ def ExtractWatermark(img: np.ndarray, mu: str) -> str:
     wm = StringIO()
     lr, lg, lb = SplitLayer_By4x4Blocks(img[0]), SplitLayer_By4x4Blocks(img[1]), SplitLayer_By4x4Blocks(img[2])
     for block in lr:
-        wm_part, tdc = ExtractDataBitsFromImageBlock(block, a, b, BinToInt(mu[:11]))
+        wm_part = ExtractDataBitsFromImageBlock(block, a, b, BinToInt(mu[:11]))
         wm.write(wm_part)
 
     return wm.getvalue().rstrip('0')
 
+
+def ExtractTDC(block: np.ndarray) -> str:
+    return IntToBin(block[1][0] % 4, 2)
