@@ -31,7 +31,7 @@ class Programm:
 
     def extract_watermark(self):
         img_arr = image_as_layers(self.image_file)
-        wm = ExtractWatermark(img_arr, self.mu)[:self.l * 4]
+        wm = ExtractWatermark(img_arr, self.mu)[:self.l]
         wm = hex(int(wm, 2))[2:]
         print('Extracted watermark:', wm)
 
