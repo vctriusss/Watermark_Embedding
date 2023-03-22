@@ -1,5 +1,6 @@
 import argparse
 from src.Programm import *
+from src.experiments import *
 
 parser = argparse.ArgumentParser(description='Watermark embedding and extraction programm\n')
 parser.add_argument('-i', '--image', dest='image_file', help='Input image file')
@@ -13,6 +14,7 @@ parser.add_argument('-l', type=int, dest='l', help='Length of watermark(in hex s
 
 
 def main():
+    # Main programm:
     args = parser.parse_args()
     program = Programm(args)
     if args.C:
@@ -21,6 +23,11 @@ def main():
         program.extract_watermark()
     elif args.R:
         program.exctract_cover()
+
+    # Experiments:
+    # PSNR('lena.png', 'image1.png')
+    # SSIM('lena.png', 'image1.png')
+    # tamper_check('img1.png', 'img2.png', 'img3.png','img4.png')
 
 
 if __name__ == '__main__':
